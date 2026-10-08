@@ -70,6 +70,8 @@ Quando un'operazione va a buon fine il programma **torna al menu iniziale**, pro
 
 I nomi `data.json` e `result.json` sono fissi e il programma non accetta argomenti da riga di comando. L'opzione 2 non legge né modifica `data.json`; l'opzione 4 non tocca `result.json`.
 
+> **Dove devono stare i file.** `data.json` e `result.json` sono letti e scritti nella **directory di lavoro corrente**, non necessariamente nella cartella dell'eseguibile: se lanci il programma da un terminale conta la cartella in cui ti trovi. La scelta più semplice è tenere l'eseguibile e `data.json` nella stessa cartella e avviarlo da lì; con un doppio clic sull'eseguibile la directory di lavoro è di solito proprio la sua cartella. Se `data.json` non c'è, l'opzione 1 termina con `Impossibile aprire data.json`.
+
 Se i dati non bastano per ricavare ogni valore, il programma lo segnala su `stderr` con il messaggio `Dati insufficienti: alcuni valori restano indefiniti` e mostra e salva comunque tutto ciò che è riuscito a calcolare.
 
 ---
