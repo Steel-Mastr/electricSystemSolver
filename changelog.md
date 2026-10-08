@@ -3,6 +3,19 @@
 Tutte le modifiche rilevanti al progetto sono documentate in questo file.
 Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/).
 
+## [1.2] - 2026-10-08
+
+### Aggiunto
+
+- Menu ampliato a quattro voci: oltre a risolvere da `data.json` (`1`) e da notazione S/P (`2`), ora `3` mostra `result.json` in notazione S/P senza risolvere e `4` salva in `data.json` un circuito scritto in notazione S/P senza risolvere.
+- Deduzione **per sottrazione**: in un blocco in serie, nota la resistenza (o la ddp) complessiva e tutte quelle dei figli tranne una, il valore del figlio ignoto viene ricavato per differenza; in un blocco in parallelo vale lo stesso per la corrente. In parallelo, nota la resistenza equivalente (non nulla) e tutte le resistenze dei rami tranne una, quella ignota si ricava da `1/Rx = 1/R - somma(1/Ri)`.
+
+### Modificato
+
+- Dopo un'operazione conclusa con successo il programma torna al menu iniziale invece di attendere un Invio e chiudersi; termina con codice `1` quando un'operazione fallisce o quando l'input finisce.
+- Messaggio per una scelta non valida aggiornato a `Scelta non valida: digita un numero da 1 a 4.`
+- Nel README: versione 1.2, descrizione delle quattro opzioni, della deduzione per sottrazione e del ritorno al menu.
+
 ## [1.1] - 2026-10-07
 
 ### Aggiunto

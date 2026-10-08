@@ -1,10 +1,10 @@
 # Risolutore di circuiti resistivi
 
-**Versione 1.1**
+**Versione 1.2**
 
 Programma C++ che legge un circuito resistivo descritto come albero di blocchi **serie** e **parallelo**, ricava tutte le grandezze che riesce a dedurre (resistenza, differenza di potenziale, corrente) e mostra il risultato a terminale e in `result.json`.
 
-Il circuito si può fornire in due modi: da file (`data.json`) oppure scrivendolo direttamente nel terminale con una **notazione a lettere** (S = serie, P = parallelo).
+Il circuito si può fornire in due modi: dal file `data.json` (opzione 1) oppure scrivendolo direttamente nel terminale con una **notazione a lettere** (S = serie, P = parallelo, opzione 2). Il menu permette anche di riscrivere `data.json` (opzione 4) e di rivedere il contenuto di `result.json` (opzione 3).
 
 Non devi indicare tutti i valori: basta fornire quelli noti. Il programma propaga le informazioni su e giù per l'albero, applicando la legge di Ohm e le regole di serie e parallelo, finché non c'è più nulla da dedurre.
 
@@ -54,16 +54,21 @@ Avvia `./circuito`: compare un menu. Digita il numero della scelta e premi Invio
 
 | Scelta | Cosa fa |
 |---|---|
-| `1` | Legge il circuito da `data.json`, nella directory da cui hai lanciato il programma. |
-| `2` | Ti chiede di scrivere il circuito in [notazione S/P](#notazione-sp) su una riga. |
+| `1` | Legge il circuito da `data.json`, lo risolve e salva il risultato in `result.json`. |
+| `2` | Ti chiede di scrivere il circuito in [notazione S/P](#notazione-sp), lo risolve e salva il risultato in `result.json`. |
+| `3` | Mostra il contenuto di `result.json` in notazione S/P, senza risolvere. |
+| `4` | Ti chiede il circuito in notazione S/P e lo salva in `data.json` così com'è, senza risolvere. |
 
-**In entrambi i casi** il programma:
+Con le opzioni `1` e `2` il programma:
 
 1. mostra a terminale il risultato in notazione S/P;
-2. salva lo stesso risultato in `result.json` (nella directory corrente, sovrascrivendolo);
-3. attende un Invio prima di chiudersi, così la finestra non sparisce subito. Succede anche dopo un errore.
+2. salva lo stesso risultato in `result.json` nella directory corrente, sovrascrivendolo.
 
-I nomi `data.json` e `result.json` sono fissi e il programma non accetta argomenti da riga di comando. L'opzione 2 non legge né modifica `data.json`.
+Le opzioni `3` e `4` non calcolano nulla: la `3` rilegge `result.json` (che deve esistere), la `4` riscrive `data.json`.
+
+Quando un'operazione va a buon fine il programma **torna al menu iniziale**, pronto per una nuova scelta. Termina con codice `1` quando un'operazione fallisce o quando l'input finisce (Ctrl+D, oppure Ctrl+Z e Invio su Windows): non esiste una voce per uscire.
+
+I nomi `data.json` e `result.json` sono fissi e il programma non accetta argomenti da riga di comando. L'opzione 2 non legge né modifica `data.json`; l'opzione 4 non tocca `result.json`.
 
 Se i dati non bastano per ricavare ogni valore, il programma lo segnala su `stderr` con il messaggio `Dati insufficienti: alcuni valori restano indefiniti` e mostra e salva comunque tutto ciò che è riuscito a calcolare.
 
@@ -71,7 +76,7 @@ Se i dati non bastano per ricavare ogni valore, il programma lo segnala su `stde
 
 ## Formato di input (JSON)
 
-Vale per l'opzione 1.
+Vale per il file `data.json`, letto dall'opzione 1.
 
 L'input è un singolo oggetto JSON che rappresenta il blocco radice. Ogni blocco può contenere altri blocchi nel campo `figli`, a qualsiasi profondità.
 
@@ -94,7 +99,7 @@ Note:
 
 ## Formato di output (JSON)
 
-`result.json` ha la stessa struttura dell'input, con questi accorgimenti:
+`result.json` (letto dall'opzione 3) ha la stessa struttura dell'input, con questi accorgimenti:
 
 - Le chiavi sono sempre nella forma con unità e in quest'ordine: `tipo`, `corrente(A)`, `ddp(V)`, `resistenza(OHM)`, `figli`.
 - Le grandezze rimaste ignote vengono **omesse**.
@@ -105,7 +110,7 @@ Note:
 
 ## Notazione S/P
 
-Vale per l'opzione 2, ed è anche il formato in cui il risultato viene mostrato a terminale in entrambe le opzioni. È la notazione "a lettere" dei circuiti serie-parallelo: **S** per la serie, **P** per il parallelo, parentesi per l'ordine delle operazioni.
+Vale per le opzioni 2 e 4 in input, ed è il formato in cui il risultato viene mostrato a terminale (opzioni 1, 2 e 3). È la notazione "a lettere" dei circuiti serie-parallelo: **S** per la serie, **P** per il parallelo, parentesi per l'ordine delle operazioni.
 
 **Componente**
 
@@ -231,12 +236,15 @@ Il programma ripete i passaggi seguenti, su tutti i blocchi dai figli verso la r
 - Resistenza = somma delle resistenze dei figli (se tutte note).
 - ddp = somma delle ddp dei figli (se tutte note).
 - La corrente è la stessa per tutti: se è nota in un figlio o nel blocco, viene assegnata a tutti gli altri.
+- Se la resistenza (o la ddp) del blocco è nota e un solo figlio ha quella grandezza ignota, il valore del figlio viene ricavato per sottrazione.
 
 **Blocco in parallelo**
 
 - 1 / R = somma di 1 / Ri dei figli (se tutte note). Se un ramo ha resistenza 0 (corto circuito), la resistenza del parallelo è 0.
 - La ddp è la stessa per tutti: se è nota in un figlio o nel blocco, viene assegnata a tutti gli altri.
 - Corrente = somma delle correnti dei figli (se tutte note).
+- Se la corrente del blocco è nota e un solo figlio ha la corrente ignota, quella corrente viene ricavata per sottrazione.
+- Se la resistenza equivalente è nota e non nulla, e un solo ramo ha la resistenza ignota, quella resistenza viene ricavata da 1 / Rx = 1 / R - somma di 1 / Ri.
 
 ---
 
@@ -250,7 +258,7 @@ Il programma ripete i passaggi seguenti, su tutti i blocchi dai figli verso la r
 
 **Capacità di deduzione**
 
-- Il programma **non deduce per sottrazione**. Esempi: in una serie con ddp totale nota e ddp di un solo figlio noto, la ddp dell'altro figlio non viene ricavata; in un parallelo con corrente totale e corrente di un ramo note, la corrente dell'altro ramo non viene ricavata.
+- La deduzione **per sottrazione** funziona solo con il totale noto e **un solo** figlio ignoto. Con due o più figli ignoti quella grandezza resta indefinita.
 - Se i dati non bastano, i valori restano ignoti (e quindi omessi dall'output). Non viene fatto alcun tentativo di stima.
 - Con resistenza 0 (corto circuito) e ddp nota, la corrente non è determinabile e resta ignota.
 
@@ -267,8 +275,8 @@ Il programma ripete i passaggi seguenti, su tutti i blocchi dai figli verso la r
 
 **Uso da riga di comando**
 
-- File e percorsi fissi: `data.json` in input e `result.json` in output, nella directory corrente. Nessun argomento da riga di comando.
-- Il menu richiede di premere Invio dopo la scelta; non è un tasto singolo.
+- File e percorsi fissi: `data.json` e `result.json`, nella directory corrente. Nessun argomento da riga di comando.
+- Il menu richiede di premere Invio dopo la scelta; non è un tasto singolo e non esiste una voce per uscire: il programma termina solo quando l'input finisce o quando un'operazione fallisce.
 - L'esito "dati insufficienti" non cambia il codice di uscita (resta 0): per accorgersene bisogna leggere `stderr`.
 
 **Notazione S/P**
@@ -286,23 +294,25 @@ Il programma ripete i passaggi seguenti, su tutti i blocchi dai figli verso la r
 | Tutto calcolato | nessuno | 0 | scritto |
 | Dati insufficienti | `Dati insufficienti: alcuni valori restano indefiniti` | 0 | scritto (parziale) |
 | `data.json` non trovato | `Impossibile aprire data.json` | 1 | non toccato |
+| `result.json` non trovato (opzione 3) | `Impossibile aprire result.json` | 1 | – |
 | JSON non valido | `Errore JSON: ...` | 1 | non toccato |
 | Blocco che non è un oggetto | `Errore: Un blocco deve essere un oggetto JSON` | 1 | non toccato |
 | `figli` non è un array | `Errore: "figli" deve essere un array` | 1 | non toccato |
 | Grandezza non numerica | `Errore: "ddp" deve essere un numero` (o la grandezza interessata) | 1 | non toccato |
 | Forma semplice e forma con unità insieme | `Errore: Specificati sia "ddp" sia "ddp(V)" nello stesso blocco` | 1 | non toccato |
 | Impossibile scrivere `result.json` | `Impossibile scrivere result.json` | 1 | non scritto |
+| Impossibile scrivere `data.json` (opzione 4) | `Impossibile scrivere data.json` | 1 | – |
 
-Il programma attende sempre un Invio prima di chiudersi, anche dopo un errore.
+Quando un'operazione riesce, il programma torna al menu iniziale; esce con codice 1 quando fallisce o quando l'input finisce.
 
 Altri casi:
 
 | Situazione | Comportamento | Codice di uscita |
 |---|---|---|
-| Scelta del menu diversa da `1` o `2` | `Scelta non valida: digita 1 oppure 2.` e richiede la scelta | – |
-| Notazione non valida (opzione 2) | `Errore di notazione: ...` con `^` sotto il punto del problema, poi puoi riprovare | – |
-| Riga vuota nell'opzione 2 | `Nessun circuito inserito.` e chiusura | 0 |
-| Input terminato (stdin chiuso) prima della scelta o della notazione | chiusura | 1 |
+| Scelta del menu diversa da `1`, `2`, `3` o `4` | `Scelta non valida: digita un numero da 1 a 4.` e richiede la scelta | – |
+| Notazione non valida (opzioni 2 e 4) | `Errore di notazione: ...` con `^` sotto il punto del problema, poi puoi riprovare | – |
+| Riga vuota nelle opzioni 2 e 4 | `Nessun circuito inserito.` e ritorno al menu | 0 |
+| Input terminato (stdin chiuso) durante la scelta o la notazione | chiusura | 1 |
 | Impossibile scrivere `result.json` | il risultato viene comunque mostrato a terminale | 1 |
 
 In caso di errore, un eventuale `result.json` di una esecuzione precedente resta com'è: non fidarti di quel file se il programma è terminato con codice 1.
