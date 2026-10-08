@@ -1,0 +1,27 @@
+{
+  "tipo": "serie",
+  "ddp(V)": 24,
+  "figli": [
+    {
+      "resistenza(OHM)": 100
+    },
+    {
+      "tipo": "parallelo",
+      "figli": [
+        { "resistenza": 200 },
+        { "resistenza": 300 },
+        {
+          "tipo": "serie",
+          "figli": [
+            { "resistenza": 50 },
+            { "resistenza": 150 }
+          ]
+        }
+      ]
+    },
+    {
+      "corrente(A)": 0.12,
+      "ddp": 3
+    }
+  ]
+}
